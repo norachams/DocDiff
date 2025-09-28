@@ -11,7 +11,7 @@ type Props = {
 const Navbar: React.FC<Props> = ({ onLoadSample, onReset, onExport, className = "" }) => {
   return (
     <header className={`w-full ${className}`}>
-      <div className="mx-auto max-w-6xl px-4 py-6 flex items-start justify-between gap-6">
+      <div className="mx-auto max-w-8xl px-4 py-6 flex items-start justify-between gap-6">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
             Doc Detective <span className="text-amber-600 font-bold">Lite</span>
