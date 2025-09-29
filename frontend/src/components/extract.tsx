@@ -1,4 +1,12 @@
 import React, { useState } from "react";
+import { pdfjs, Document, Page } from "react-pdf";
+
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.mjs",
+  import.meta.url
+).toString();
+
 
 type Props = {
   markdownA?: string;
@@ -101,11 +109,14 @@ const Extract: React.FC<Props> = ({
               <div className="text-sm text-neutral-400 font-mono">(empty)</div>
             )
           ) : currentPdf ? (
-            <iframe
-              src={currentPdf}
-              title={`PDF ${tab}`}
-              className="w-full h-[28rem] rounded-lg"
-            />
+            <div className="w-full h-[28rem] overflow-auto flex justify-center">
+             <Document
+              file={{ url: currentPdf }}
+              onLoadError={(e) => console.error("PDF load error:", e)}
+            >
+              <Page pageNumber={1} renderAnnotationLayer={false} renderTextLayer={false} width={800} />
+            </Document>
+            </div> 
           ) : (
             <div className="text-sm text-neutral-400 font-mono">
               (no PDF loaded)
@@ -118,3 +129,4 @@ const Extract: React.FC<Props> = ({
 };
 
 export default Extract;
+

@@ -5,13 +5,19 @@ type Props = {
   onMarkdownB: (md: string) => void;
   className?: string;
   onLoadingChange?: (which: "A" | "B", isLoading: boolean) => void;
+
+  onPdfUrlA?: (url: string) => void; 
+  onPdfUrlB?: (url: string) => void;
 };
 
-const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onLoadingChange }) => {
+const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onLoadingChange, onPdfUrlA, onPdfUrlB, }) => {
   async function handlePdf(e: React.ChangeEvent<HTMLInputElement>, which: "A" | "B") {
     const inputEl = e.currentTarget;           
     const file = inputEl.files?.[0];           
     if (!file || !file.name.toLowerCase().endsWith(".pdf")) return;
+
+    const url = URL.createObjectURL(file); 
+    if (which === "A") onPdfUrlA?.(url); else onPdfUrlB?.(url);
 
     const form = new FormData();
     form.append("file", file);

@@ -1,4 +1,3 @@
-// src/App.tsx
 import Upload from "./components/upload";
 import DiffPreview from "./components/DiffPreview";
 import Extract from "./components/extract";   
@@ -9,6 +8,8 @@ export default function App() {
   const [markdownB, setMarkdownB] = useState<string>("");
   const [loadingA, setLoadingA] = useState<boolean>(false);
   const [loadingB, setLoadingB] = useState<boolean>(false);
+  const [pdfUrlA, setPdfUrlA] = useState<string | undefined>(undefined); 
+  const [pdfUrlB, setPdfUrlB] = useState<string | undefined>(undefined); 
 
   const handleLoadingChange = (which: "A" | "B", isLoading: boolean) => {
     if (which === "A") {
@@ -26,12 +27,16 @@ export default function App() {
           onMarkdownA={setMarkdownA}
           onMarkdownB={setMarkdownB}
           onLoadingChange={handleLoadingChange}
+          onPdfUrlA={setPdfUrlA}   
+          onPdfUrlB={setPdfUrlB} 
         />  
         <DiffPreview className="md:col-span-3"/>
       </div>
         <Extract className="md:col-span-3 mt-6"
           markdownA={markdownA}
           markdownB={markdownB}
+          pdfUrlA={pdfUrlA}       
+          pdfUrlB={pdfUrlB} 
           isExtractingA={loadingA}
           isExtractingB={loadingB}
         />
