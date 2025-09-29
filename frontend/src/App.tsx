@@ -2,6 +2,8 @@ import Upload from "./components/upload";
 import DiffPreview from "./components/DiffPreview";
 import Extract from "./components/extract";   
 import { useState } from "react";
+import Navbar from './components/navbar.tsx'
+
 
 export default function App() {
   const [markdownA, setMarkdownA] = useState<string>("");
@@ -19,7 +21,22 @@ export default function App() {
     }
   };
 
+  const handleReset = () => {
+    setMarkdownA("");
+    setMarkdownB("");
+    setPdfUrlA(undefined);
+    setPdfUrlB(undefined);
+    setLoadingA(false);
+    setLoadingB(false);
+  };
+
   return (
+    <>
+     <Navbar
+      onLoadSample={() => { /* TODO: implement sample loading */ }}
+      onReset={handleReset}  
+      onExport={() => { /* TODO: implement export */ }}
+    />
     <main className="mx-auto max-w-8xl px-4 py-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Upload
@@ -45,6 +62,7 @@ export default function App() {
           isExtractingB={loadingB}
         />
     </main>
+     </>
   );
 }
 
