@@ -14,10 +14,10 @@ const Navbar: React.FC<Props> = ({ onLoadSample, onReset, onExport, className = 
       <div className="mx-auto max-w-8xl px-4 py-6 flex items-start justify-between gap-6">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
-            Doc Detective <span className="text-amber-600 font-bold">Lite</span>
+            Doc <span className="text-green-600 font-bold">Detective</span>
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
-            Compare two document versions using Cardinal-style extraction outputs (Markdown) and visualize changes.
+            Easily compare the difference between two document versions. We only support 1 pages and PDFs for now.
           </p>
         </div>
 

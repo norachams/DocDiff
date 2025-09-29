@@ -30,7 +30,11 @@ export default function App() {
           onPdfUrlA={setPdfUrlA}   
           onPdfUrlB={setPdfUrlB} 
         />  
-        <DiffPreview className="md:col-span-3"/>
+        <DiffPreview
+          className="md:col-span-3"
+          left={markdownA}
+          right={markdownB}
+        />
       </div>
         <Extract className="md:col-span-3 mt-6"
           markdownA={markdownA}
