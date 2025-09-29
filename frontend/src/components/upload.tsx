@@ -4,10 +4,10 @@ type Props = {
   onMarkdownA: (md: string) => void;
   onMarkdownB: (md: string) => void;
   className?: string;
+  onLoadingChange?: (which: "A" | "B", isLoading: boolean) => void;
 };
 
-
-const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "" }) => {
+const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onLoadingChange }) => {
   async function handlePdf(e: React.ChangeEvent<HTMLInputElement>, which: "A" | "B") {
     const inputEl = e.currentTarget;           
     const file = inputEl.files?.[0];           
@@ -17,6 +17,7 @@ const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "" }) =
     form.append("file", file);
 
     try {
+      onLoadingChange?.(which, true);
       const res = await fetch("http://localhost:8000/api/extract", { method: "POST", body: form });
       if (!res.ok) {
         const text = await res.text();
@@ -33,6 +34,7 @@ const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "" }) =
       console.error(err);
       alert("Failed to extract. Check backend logs and CARDINAL_API_KEY.");
     } finally {
+      onLoadingChange?.(which, false);
       inputEl.value = "";                       
     }
   }
