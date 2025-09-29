@@ -84,6 +84,11 @@ async def extract(file: UploadFile = File(...)):
     }
 
 
+#still need to 
+
+#to loading feature when extracting
+#show the file name uploaded and to delete like an x
+# have option to view image at the bottom
 
 
 

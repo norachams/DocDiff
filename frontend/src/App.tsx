@@ -10,19 +10,21 @@ export default function App() {
 
   return (
     <main className="mx-auto max-w-8xl px-4 py-6">
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Upload
-          className="sm:col-span-1"
+          className="md:col-span-1"
           onMarkdownA={setMarkdownA}
           onMarkdownB={setMarkdownB}
         />  
-        <DiffPreview className="md:col-span-2"/>
+        <DiffPreview className="md:col-span-3"/>
 
+      </div>
         <Extract className="md:col-span-3 mt-6"
           markdownA={markdownA}
           markdownB={markdownB}
         />
-      </div>
     </main>
   );
 }
+
+

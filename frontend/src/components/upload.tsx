@@ -46,17 +46,22 @@ const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "" }) =
         <div className="mt-4">
           <p className="text-sm font-medium text-neutral-900">Document A</p>
           <div className="mt-2">
-            <label className="inline-flex">
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={(e) => handlePdf(e, "A")}
-                className="hidden"
-              />
-              <span className="cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm font-medium text-neutral-800 hover:bg-neutral-50">
-                Choose PDF
-              </span>
-            </label>
+            <input accept=".pdf" id="file_input" type="file" onChange={(e) => handlePdf(e, "A")}
+            className="block w-full text-sm text-neutral-900
+            rounded-lg border border-neutral-300           
+            bg-white                               
+            cursor-pointer focus:outline-none
+            focus:ring-2 focus:ring-neutral-800/10       
+            overflow-hidden                                 
+            file:mr-4                                    
+            file:rounded-l-lg                              
+            file:border-0                                 
+            file:px-4 file:py-2                           
+            file:text-sm file:font-medium
+            file:bg-neutral-200 file:text-black           
+            hover:file:bg-neutral-300 "
+            >
+            </input>
           </div>
         </div>
 
@@ -66,17 +71,22 @@ const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "" }) =
         <div>
           <p className="text-sm font-medium text-neutral-900">Document B</p>
           <div className="mt-2">
-            <label className="inline-flex">
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={(e) => handlePdf(e, "B")}
-                className="hidden"
-              />
-              <span className="cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-sm font-medium text-neutral-800 hover:bg-neutral-50">
-                Choose PDF
-              </span>
-            </label>
+           <input accept=".pdf" id="file_input" type="file" onChange={(e) => handlePdf(e, "B")}
+            className="block w-full text-sm text-neutral-900
+            rounded-lg border border-neutral-300           
+            bg-white                               
+            cursor-pointer focus:outline-none
+            focus:ring-2 focus:ring-neutral-800/10       
+            overflow-hidden                                 
+            file:mr-4                                    
+            file:rounded-l-lg                              
+            file:border-0                                 
+            file:px-4 file:py-2                           
+            file:text-sm file:font-medium
+            file:bg-neutral-200 file:text-black           
+            hover:file:bg-neutral-300 "
+            >
+            </input>
           </div>
         </div>
       </div>

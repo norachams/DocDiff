@@ -23,7 +23,7 @@ const Extract: React.FC<Props> = ({ markdownA = "", markdownB = "", className = 
               : "text-neutral-500 hover:text-neutral-800"
           }`}
         >
-          Version A
+          Document A
         </button>
         <button
           type="button"
@@ -34,7 +34,7 @@ const Extract: React.FC<Props> = ({ markdownA = "", markdownB = "", className = 
               : "text-neutral-500 hover:text-neutral-800"
           }`}
         >
-          Version B
+          Document B
         </button>
       </div>
 
