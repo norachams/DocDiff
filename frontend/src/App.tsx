@@ -17,7 +17,6 @@ export default function App() {
           onMarkdownB={setMarkdownB}
         />  
         <DiffPreview className="md:col-span-3"/>
-
       </div>
         <Extract className="md:col-span-3 mt-6"
           markdownA={markdownA}
