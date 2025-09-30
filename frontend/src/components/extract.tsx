@@ -8,11 +8,18 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";          
 import rehypeStringify from "rehype-stringify"; 
 
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.js?url";  
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.mjs",
-  import.meta.url
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;    
+
+console.log("pdfjs-dist version", (pdfjs as typeof pdfjs).version);   
+console.log("workerSrc", pdfjs.GlobalWorkerOptions.workerSrc);
+
+
+// pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+//   "pdfjs-dist/build/pdf.worker.mjs",
+//   import.meta.url
+// ).toString();
 
 
 type Props = {
@@ -162,4 +169,3 @@ const Extract: React.FC<Props> = ({
 };
 
 export default Extract;
-

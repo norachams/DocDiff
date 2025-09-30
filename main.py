@@ -7,7 +7,6 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import difflib
 from fastapi import Body
-from fastapi.middleware.cors import CORSMiddleware
 
 
 
@@ -47,13 +46,18 @@ app.add_middleware(
 
 
 def extract_text(payload):
-    chunks = []
-    for p in payload.get("pages", []):
-        txt = p.get("content")
 
-        if txt:
-            chunks.append(txt)
-    return "\n\n---\n\n".join(chunks) if chunks else "# (No text found)\n"
+    markdown_content = payload["pages"][0]["content"]
+
+    return markdown_content
+
+    # chunks = []
+    # for p in payload.get("pages", []):
+    #     txt = p.get("content")
+
+    #     if txt:
+    #         chunks.append(txt)
+    # return "\n\n---\n\n".join(chunks) if chunks else "# (No text found)\n"
 
 
 
@@ -74,14 +78,16 @@ async def extract(file: UploadFile = File(...)):
 
     payload = response.json()
     md = extract_text(payload)
-    
-    original_page_count = len(payload.get("pages", [])) or payload.get("total_pages")
 
-    return {
-        "markdown": md,
-        "original_page_count": original_page_count,
-        "page_num": 1,  
-    }
+    return {"markdown": md}
+    
+    # original_page_count = len(payload.get("pages", [])) or payload.get("total_pages")
+
+    # return {
+    #     "markdown": md,
+    #     "original_page_count": original_page_count,
+    #     "page_num": 1,  
+    # }
 
 
 @app.post("/api/diff")
@@ -90,7 +96,7 @@ def diff_lines(payload: dict = Body(...)):
     b = (payload.get("b") or "").splitlines()
 
     sm = difflib.SequenceMatcher(None, a, b, autojunk=False)  
-    ops = sm.get_opcodes()  #
+    ops = sm.get_opcodes()  
     return {"ops": ops}
 
 

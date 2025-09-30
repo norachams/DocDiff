@@ -12,8 +12,7 @@ type Props = {
 };
 
 
-
-const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onLoadingChange, onPdfUrlA, onPdfUrlB, }) => {
+const Upload: React.FC<Props> = ({  className = "", onMarkdownA, onMarkdownB, onLoadingChange, onPdfUrlA, onPdfUrlB, }) => {
   async function handlePdf(e: React.ChangeEvent<HTMLInputElement>, which: "A" | "B") {
     const inputEl = e.currentTarget;           
     const file = inputEl.files?.[0];           
@@ -37,8 +36,7 @@ const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onL
 
       const { markdown } = await res.json();
       const md = markdown ?? "";
-      // const data = await res.json();
-      // const md: string = data?.markdown ?? "";
+    
       if (which === "A") {
         onMarkdownA(md);
       } else {
