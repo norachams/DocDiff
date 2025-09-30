@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import ReactMarkdown from "react-markdown";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+import { unified } from "unified"; 
+import remarkParse from "remark-parse"; 
+import remarkGfm from "remark-gfm";
+import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw"; 
+import rehypeSanitize from "rehype-sanitize"; 
+import rehypeStringify from "rehype-stringify"; 
 
 
 type Props = {
@@ -26,6 +33,27 @@ const DiffPreview: React.FC<Props> = ({ left = "", right = "", className = "" })
   const [added, setAdded] = useState(0);
   const [removed, setRemoved] = useState(0);
   const [unchanged, setUnchanged] = useState(0);
+
+   const processor = useMemo(
+    () =>
+      unified()
+        .use(remarkParse)
+        .use(remarkGfm)
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeRaw)
+        .use(rehypeSanitize)
+        .use(rehypeStringify),
+    []
+  );
+
+  const aHtml = useMemo(
+    () => a.map((ln) => String(processor.processSync(ln || ""))), 
+    [a, processor]
+  );
+  const bHtml = useMemo(
+    () => b.map((ln) => String(processor.processSync(ln || ""))), 
+    [b, processor]
+  );
 
   useEffect(() => {
     let alive = true;
@@ -114,18 +142,21 @@ const DiffPreview: React.FC<Props> = ({ left = "", right = "", className = "" })
                   <div key={i} className="grid grid-cols-2">
                     <div className={`px-3 py-1 border-b border-neutral-100 ${leftBg}`}>
                       {r.left !== null ? (
-                        <div className="prose prose-sm max-w-none">
-                          <ReactMarkdown>{r.left}</ReactMarkdown>
-                        </div>
+                        <div
+                          className="prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: aHtml[a.indexOf(r.left)] ?? "" }}
+                        />
+
                       ) : (
                         <span className="text-neutral-300">•</span>
                       )}
                     </div>
                      <div className={`px-3 py-1 border-b border-l border-neutral-100 ${rightBg}`}>
                       {r.right !== null ? (
-                        <div className="prose prose-sm max-w-none">
-                          <ReactMarkdown>{r.right}</ReactMarkdown>
-                        </div>
+                        <div
+                          className="prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: bHtml[b.indexOf(r.right)] ?? "" }}
+                        />
                       ) : (
                         <span className="text-neutral-300">•</span>
                       )}

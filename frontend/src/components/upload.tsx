@@ -11,6 +11,8 @@ type Props = {
   onPdfUrlB?: (url: string) => void;
 };
 
+
+
 const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onLoadingChange, onPdfUrlA, onPdfUrlB, }) => {
   async function handlePdf(e: React.ChangeEvent<HTMLInputElement>, which: "A" | "B") {
     const inputEl = e.currentTarget;           
@@ -27,12 +29,16 @@ const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onL
       onLoadingChange?.(which, true);
       // const res = await fetch("http://localhost:8000/api/extract", { method: "POST", body: form });
       const res = await fetch(`${API_BASE}/api/extract`, { method: "POST", body: form });
+
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || `HTTP ${res.status}`);
       }
-      const data = await res.json();
-      const md: string = data?.markdown ?? "";
+
+      const { markdown } = await res.json();
+      const md = markdown ?? "";
+      // const data = await res.json();
+      // const md: string = data?.markdown ?? "";
       if (which === "A") {
         onMarkdownA(md);
       } else {

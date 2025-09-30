@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import { pdfjs, Document, Page } from "react-pdf";
-import ReactMarkdown from "react-markdown";      
-import remarkGfm from "remark-gfm";  
+import { unified } from "unified";                     
+import remarkParse from "remark-parse";               
+import remarkGfm from "remark-gfm";                   
+import remarkRehype from "remark-rehype";             
+import rehypeRaw from "rehype-raw";                   
+import rehypeSanitize from "rehype-sanitize";          
+import rehypeStringify from "rehype-stringify"; 
 
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -34,6 +39,31 @@ const Extract: React.FC<Props> = ({
   const currentMarkdown = tab === "A" ? markdownA : markdownB;
   const currentPdf = tab === "A" ? pdfUrlA : pdfUrlB;
   const isLoading = tab === "A" ? isExtractingA : isExtractingB;
+
+  const [html, setHtml] = useState<string>("");
+
+  const processor = unified()                 
+    .use(remarkParse)                         
+    .use(remarkGfm)                           
+    .use(remarkRehype, { allowDangerousHtml: true }) 
+    .use(rehypeRaw)                           
+    .use(rehypeSanitize)                      
+    .use(rehypeStringify);                    
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const file = await processor.process(currentMarkdown || "");
+        if (!cancelled) setHtml(String(file));
+      } catch {
+        if (!cancelled) setHtml("");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentMarkdown]);
 
   return (
     <section className={`w-full ${className}`}>
@@ -104,11 +134,10 @@ const Extract: React.FC<Props> = ({
             </div>
           ) : mode === "text" ? (
             currentMarkdown ? (
-                 <div className="text-sm text-neutral-900 leading-6">        
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>                
-                    {currentMarkdown}                                       
-                  </ReactMarkdown>                                          
-                </div>
+              <div
+                className="text-sm text-neutral-900 leading-6"
+                dangerouslySetInnerHTML={{ __html: html }} 
+              />
             ) : (
               <div className="text-sm text-neutral-400 font-mono">(empty)</div>
             )
