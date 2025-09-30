@@ -2,8 +2,10 @@ import Upload from "./components/upload";
 import DiffPreview from "./components/DiffPreview";
 import Extract from "./components/extract";   
 import { useState } from "react";
-import Navbar from './components/navbar.tsx'
+import Navbar from "./components/navbar";
 
+const example1 = "/Example-1.pdf";
+const example2 = "/Example-2.pdf";
 
 export default function App() {
   const [markdownA, setMarkdownA] = useState<string>("");
@@ -30,12 +32,52 @@ export default function App() {
     setLoadingB(false);
   };
 
+  async function loadSample(which: "A" | "B", path: string) { 
+
+    const setLoading = which === "A" ? setLoadingA : setLoadingB;    
+    const setPdfUrl  = which === "A" ? setPdfUrlA  : setPdfUrlB;      
+    const setMd      = which === "A" ? setMarkdownA : setMarkdownB;  
+
+    setLoading(true);
+    try {
+      const r = await fetch(path);
+      if (!r.ok) throw new Error(`Failed to fetch ${path}`);
+      const blob = await r.blob();
+
+      const file = new File([blob], path.split("/").pop() || "sample.pdf", {
+        type: "application/pdf",
+      });
+
+      setPdfUrl(URL.createObjectURL(blob));
+
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("http://localhost:8000/api/extract", {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setMd(data?.markdown ?? "");
+    } catch (e) {
+      console.error(e);
+      alert(`Failed to load ${which} sample`);
+    } finally {
+      setLoading(false);
+    }
+  } 
+  
+
+  const handleLoadSample = () => {                   
+    loadSample("A", example1);         
+    loadSample("B", example2);        
+  };
+
   return (
     <>
      <Navbar
-      onLoadSample={() => { /* TODO: implement sample loading */ }}
+      onLoadSample={handleLoadSample} 
       onReset={handleReset}  
-      onExport={() => { /* TODO: implement export */ }}
     />
     <main className="mx-auto max-w-8xl px-4 py-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -65,4 +107,3 @@ export default function App() {
      </>
   );
 }
-

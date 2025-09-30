@@ -1,64 +1,92 @@
-import React, { useMemo } from "react";
-import { diffLines } from "diff";
+import React, { useEffect, useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 type Props = {
-  left?: string;  
-  right?: string;   
+  left?: string;
+  right?: string;
   className?: string;
 };
 
+type Op = [ "equal" | "replace" | "delete" | "insert", number, number, number, number ];
+
 type Row = {
-  leftText: string | null;
-  rightText: string | null;
-  kind: "same" | "add" | "del";
+  left: string | null;
+  right: string | null;
+  tag: "same" | "add" | "del" | "replace";
 };
 
+
 const DiffPreview: React.FC<Props> = ({ left = "", right = "", className = "" }) => {
-  const { rows, added, removed, unchanged } = useMemo(() => {
-    const rows: Row[] = [];
-    let added = 0, removed = 0, unchanged = 0;
+  const a = useMemo(() => left.split("\n"), [left]);
+  const b = useMemo(() => right.split("\n"), [right]);
 
-    const parts = diffLines(left, right, { newlineIsToken: false });
+  const [rows, setRows] = useState<Row[]>([]);
+  const [added, setAdded] = useState(0);
+  const [removed, setRemoved] = useState(0);
+  const [unchanged, setUnchanged] = useState(0);
 
-    for (const p of parts) {
-      const lines = (p.value ?? "").split("\n");
+  useEffect(() => {
+    let alive = true;
 
-      if (lines.length && lines[lines.length - 1] === "") lines.pop();
+    (async () => {
+      const res = await fetch("http://localhost:8000/api/diff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ a: left, b: right }),
+      });
 
-      if (p.added) {
+      if (!res.ok) { if (alive) { setRows([]); setAdded(0); setRemoved(0); setUnchanged(0); } return; }
 
-        added += lines.length;
-        for (const ln of lines) rows.push({ leftText: null, rightText: ln, kind: "add" });
-      } else if (p.removed) {
+      const data: { ops: Op[] } = await res.json();
+      if (!alive) return;
 
-        removed += lines.length;
-        for (const ln of lines) rows.push({ leftText: ln, rightText: null, kind: "del" });
-      } else {
+      const out: Row[] = [];
+      let plus = 0, minus = 0, same = 0;
 
-        unchanged += lines.length;
-        for (const ln of lines) rows.push({ leftText: ln, rightText: ln, kind: "same" });
+      for (const [tag, i1, i2, j1, j2] of data.ops) {
+        if (tag === "equal") {
+          for (let k = 0; k < i2 - i1; k++) {
+            out.push({ left: a[i1 + k] ?? "", right: b[j1 + k] ?? "", tag: "same" });
+          }
+          same += (i2 - i1);
+        } else if (tag === "delete") {
+          for (let i = i1; i < i2; i++) out.push({ left: a[i] ?? "", right: null, tag: "del" });
+          minus += (i2 - i1);
+        } else if (tag === "insert") {
+          for (let j = j1; j < j2; j++) out.push({ left: null, right: b[j] ?? "", tag: "add" });
+          plus += (j2 - j1);
+        } else { 
+          const len = Math.max(i2 - i1, j2 - j1);
+          for (let k = 0; k < len; k++) {
+            out.push({
+              left:  k < (i2 - i1) ? (a[i1 + k] ?? "") : null,
+              right: k < (j2 - j1) ? (b[j1 + k] ?? "") : null,
+              tag: "replace",
+            });
+          }
+          minus += (i2 - i1);
+          plus  += (j2 - j1);
+        }
       }
-    }
 
-    return { rows, added, removed, unchanged };
-  }, [left, right]);
+      setRows(out);
+      setAdded(plus);
+      setRemoved(minus);
+      setUnchanged(same);
+    })();
+
+    return () => { alive = false; };
+  }, [left, right, a, b]);
 
   return (
     <section className={`w-full ${className}`}>
       <div className="mx-auto max-w-8xl px-4 py-6 rounded-2xl border border-neutral-200 bg-white p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-neutral-900">Difference Preview</h2>
-
           <div className="flex items-center gap-2 text-xs">
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 font-medium text-green-800">
-              + {added}
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 font-medium text-red-800">
-              - {removed}
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-1 font-medium text-neutral-700">
-              = {unchanged}
-            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 font-medium text-green-800">+ {added}</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 font-medium text-red-800">- {removed}</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-1 font-medium text-neutral-700">= {unchanged}</span>
           </div>
         </div>
 
@@ -69,34 +97,35 @@ const DiffPreview: React.FC<Props> = ({ left = "", right = "", className = "" })
             <div className="px-3 py-2 border-l border-neutral-200">Document B</div>
           </div>
 
-          {/* rows */}
-          <div className="max-h-[28rem] overflow-auto font-mono text-[13px] leading-6">
+          <div className="max-h-[28rem] overflow-auto text-[13px] leading-6">
             {rows.length === 0 ? (
               <div className="p-6 text-sm text-neutral-400 text-center">
                 Upload two PDF files or load the sample to view file differences.
               </div>
             ) : (
               rows.map((r, i) => {
-                const leftClasses =
-                  r.kind === "del"
-                    ? "bg-red-50"
-                    : r.kind === "same"
-                    ? ""
-                    : "bg-white";
-                const rightClasses =
-                  r.kind === "add"
-                    ? "bg-green-50"
-                    : r.kind === "same"
-                    ? ""
-                    : "bg-white";
+                const leftBg  = r.tag === "del" || r.tag === "replace" ? "bg-red-50"   : r.tag === "same" ? "" : "bg-white";
+                const rightBg = r.tag === "add" || r.tag === "replace" ? "bg-green-50" : r.tag === "same" ? "" : "bg-white";
 
                 return (
                   <div key={i} className="grid grid-cols-2">
-                    <div className={`px-3 py-1 border-b border-neutral-100 ${leftClasses}`}>
-                      {r.leftText !== null ? r.leftText : <span className="text-neutral-300">•</span>}
+                    <div className={`px-3 py-1 border-b border-neutral-100 ${leftBg}`}>
+                      {r.left !== null ? (
+                        <div className="prose prose-sm max-w-none">
+                          <ReactMarkdown>{r.left}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <span className="text-neutral-300">•</span>
+                      )}
                     </div>
-                    <div className={`px-3 py-1 border-b border-neutral-100 border-l border-neutral-100 ${rightClasses}`}>
-                      {r.rightText !== null ? r.rightText : <span className="text-neutral-300">•</span>}
+                     <div className={`px-3 py-1 border-b border-l border-neutral-100 ${rightBg}`}>
+                      {r.right !== null ? (
+                        <div className="prose prose-sm max-w-none">
+                          <ReactMarkdown>{r.right}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <span className="text-neutral-300">•</span>
+                      )}
                     </div>
                   </div>
                 );

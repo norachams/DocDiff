@@ -5,19 +5,22 @@ import json, pathlib
 load_dotenv()
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import difflib
+from fastapi import Body
+
 
 load_dotenv()
 
 cardinal_api_key = os.getenv("CARDINAL_API_KEY")
-pdf_path1 = os.getenv("PDF_PATH")
-pdf_path2 = os.getenv("PDF_PATH_2")
 
 url = "https://api.trycardinal.ai/markdown"
 headers = {"x-api-key": cardinal_api_key}
-data = {"markdown": "true", "denseTables": "true"}
+data = {
+    "markdown": "true",
+}
+
 
 app = FastAPI()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,7 +31,60 @@ app.add_middleware(
 )
 
 
-# def get_pdf(path):
+
+def extract_text(payload):
+    chunks = []
+    for p in payload.get("pages", []):
+        txt = p.get("content")
+
+        if txt:
+            chunks.append(txt)
+    return "\n\n---\n\n".join(chunks) if chunks else "# (No text found)\n"
+
+
+
+
+@app.post("/api/extract")
+async def extract(file: UploadFile = File(...)):
+
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Please upload a .pdf")
+    try:
+        files = {"file": (file.filename, await file.read(), "application/pdf")}
+        response = requests.post(url, headers=headers, files=files, data=data) 
+    except requests.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Upstream error: {e}")
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.text[:1000])
+
+    payload = response.json()
+    md = extract_text(payload)
+    
+    original_page_count = len(payload.get("pages", [])) or payload.get("total_pages")
+
+    return {
+        "markdown": md,
+        "original_page_count": original_page_count,
+        "page_num": 1,  
+    }
+
+
+@app.post("/api/diff")
+def diff_lines(payload: dict = Body(...)):
+    a = (payload.get("a") or "").splitlines()
+    b = (payload.get("b") or "").splitlines()
+
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)  
+    ops = sm.get_opcodes()  #
+    return {"ops": ops}
+
+
+
+
+
+
+    # def get_pdf(path):
 
 #     p = pathlib.Path(path).expanduser()  
 #     if not p.exists():                   
@@ -46,50 +102,3 @@ app.add_middleware(
 #     print("Saved API output to output.json")
 #     extract_text(payload)
 
-
-def extract_text(payload):
-
-    chunks = []
-    for p in payload.get("pages", []):
-        txt = p.get("markdown") or p.get("html") or p.get("content") or p.get("raw_text")
-        if txt:
-            chunks.append(txt)
-
-    return "\n\n---\n\n".join(chunks) if chunks else "# (No text found)\n"
-
-
-@app.post("/api/extract")
-async def extract(file: UploadFile = File(...)):
-
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Please upload a .pdf")
-
-    try:
-        files = {"file": (file.filename, await file.read(), "application/pdf")}
-        resp = requests.post(url, headers=headers, files=files, data=data, timeout=120)
-    except requests.RequestException as e:
-        raise HTTPException(status_code=502, detail=f"Upstream error: {e}")
-
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text[:1000])
-
-    payload = resp.json()
-    md = extract_text(payload)
-    original_page_count = len(payload.get("pages", [])) or payload.get("total_pages")
-
-    return {
-        "markdown": md,
-        "original_page_count": original_page_count,
-        "page_num": 1,  
-    }
-
-
-#still need to 
-
-#to loading feature when extracting
-# have option to view image at the bottom
-
-
-
-
-    

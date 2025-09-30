@@ -23,7 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-frontend/src/components/DiffPreview.tsx
 
 
 .env

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { pdfjs, Document, Page } from "react-pdf";
+import ReactMarkdown from "react-markdown";      
+import remarkGfm from "remark-gfm";  
 
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -102,9 +104,11 @@ const Extract: React.FC<Props> = ({
             </div>
           ) : mode === "text" ? (
             currentMarkdown ? (
-              <pre className="whitespace-pre-wrap break-words text-sm text-neutral-800 font-mono">
-                {currentMarkdown}
-              </pre>
+                 <div className="text-sm text-neutral-900 leading-6">        
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>                
+                    {currentMarkdown}                                       
+                  </ReactMarkdown>                                          
+                </div>
             ) : (
               <div className="text-sm text-neutral-400 font-mono">(empty)</div>
             )
