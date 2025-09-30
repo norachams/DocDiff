@@ -4,6 +4,9 @@ import Extract from "./components/extract";
 import { useState } from "react";
 import Navbar from "./components/navbar";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+
 const example1 = "/Example-1.pdf";
 const example2 = "/Example-2.pdf";
 
@@ -50,9 +53,10 @@ export default function App() {
 
       setPdfUrl(URL.createObjectURL(blob));
 
+
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("http://localhost:8000/api/extract", {
+      const res = await fetch(`${API_BASE}/api/extract`, {
         method: "POST",
         body: form,
       });
