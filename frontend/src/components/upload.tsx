@@ -1,4 +1,5 @@
 import React from "react";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 type Props = {
   onMarkdownA: (md: string) => void;
@@ -24,7 +25,8 @@ const Upload: React.FC<Props> = ({ onMarkdownA, onMarkdownB, className = "", onL
 
     try {
       onLoadingChange?.(which, true);
-      const res = await fetch("http://localhost:8000/api/extract", { method: "POST", body: form });
+      // const res = await fetch("http://localhost:8000/api/extract", { method: "POST", body: form });
+      const res = await fetch(`${API_BASE}/api/extract`, { method: "POST", body: form });
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || `HTTP ${res.status}`);

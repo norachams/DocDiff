@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 
 type Props = {
   left?: string;
@@ -29,11 +31,12 @@ const DiffPreview: React.FC<Props> = ({ left = "", right = "", className = "" })
     let alive = true;
 
     (async () => {
-      const res = await fetch("http://localhost:8000/api/diff", {
+      const res = await fetch(`${API_BASE}/api/diff`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ a: left, b: right }),
       });
+
 
       if (!res.ok) { if (alive) { setRows([]); setAdded(0); setRemoved(0); setUnchanged(0); } return; }
 
